@@ -584,29 +584,6 @@ gboolean on_area_draw (GtkWidget *area, cairo_t *cr, gpointer data){
     }
 
     draw_curves (cr, &my->curve_infos);
-    /*
-    if(my->pixbuf2 != NULL){
-        int pix_width = gdk_pixbuf_get_width(my->pixbuf2);
-        int pix_height = gdk_pixbuf_get_height(my->pixbuf2);
-        gdk_cairo_set_source_pixbuf(cr,my->pixbuf2,0,0);
-        if (my->clip_image == FALSE) {
-            cairo_rectangle (cr, 0.0, 0.0, pix_width, pix_height);
-            cairo_fill (cr);
-        }
-    }
-    
-    if (my->click_n == 1) {
-        cairo_set_line_width (cr, 2);
-        cairo_set_source_rgb (cr, 0, 0, 1.0);
-        cairo_arc (cr, my->click_x, my->click_y, 100.0, 0, 2 * G_PI);
-        cairo_stroke (cr);
-        if ((my->pixbuf2 != NULL) && (my->clip_image == TRUE))
-        {
-            gdk_cairo_set_source_pixbuf (cr, my->pixbuf2, 0, 0);
-            cairo_arc (cr, my->click_x, my->click_y, 100.0, 0, 2 * G_PI);
-            cairo_fill (cr);
-        }
-    }*/
     return TRUE;
 }
 
