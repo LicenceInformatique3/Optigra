@@ -264,7 +264,7 @@ void draw_bezier_curves_open (cairo_t *cr, Curve_infos *ci, double theta){
     Control bez_points[4];
     for (j = 0; j < ci->curve_list.curve_count ; j++){
 		Curve *curve = &ci->curve_list.curves[j];
-        for (i = 0; i < (curve.control_count - 3) ; i++)
+        for (i = 0; i < (curve->control_count - 3) ; i++)
         {
             compute_bezier_points_open (curve, i, bez_points);
             cairo_set_source_rgb (cr, 0.5, 0.0, 0.5);
@@ -278,7 +278,7 @@ void draw_bezier_curves_close (cairo_t *cr, Curve_infos *ci, double theta){
     Control bez_points[4];
     for (j = 0; j < ci->curve_list.curve_count ; j++){
 		Curve *curve = &ci->curve_list.curves[j];
-        for (i = 0; i < (curve.control_count) ; i++)
+        for (i = 0; i < (curve->control_count) ; i++)
         {
             compute_bezier_points_close (curve, i, bez_points);
             cairo_set_source_rgb (cr, 1.0, 0.0, 0.0);
