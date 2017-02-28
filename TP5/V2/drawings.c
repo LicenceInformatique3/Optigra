@@ -199,6 +199,7 @@ gboolean on_area_draw (GtkWidget *area, cairo_t *cr, gpointer data){
     PangoLayout *layout = pango_cairo_create_layout (cr);
     draw_control_polygons (cr, &my->curve_infos);
     draw_bezier_polygons_open(cr,&my->curve_infos);
+    draw_bezier_curves_open(cr,&my->curve_infos,0.1);
     draw_control_labels(cr,layout,&my->curve_infos);
 	g_object_unref (layout);
     return TRUE;
@@ -217,23 +218,50 @@ void draw_control_labels(cairo_t *cr, PangoLayout *layout, Curve_infos *ci){
 	
 }
 
-void draw_bezier_polygons_open(cairo_t *cr,Curve_infos *ci){
-	Curve * curve;
-	Control bez_points[4];
-	cairo_set_line_width (cr, 3);
-	for(int i = 0;i < ci->curve_list.curve_count;++i){
-		curve = &ci->curve_list.curves[i];
-		for(int j = 0; j < curve->control_count - 3;++j){			
-			compute_bezier_points(curve,j,bez_points);
-            cairo_set_source_rgb (cr, 0, 1, 0);
-            cairo_move_to (cr, curve->controls[0].x, curve->controls[0].y);
-            cairo_line_to (cr, curve->controls[1].x, curve->controls[1].y);
+void draw_bezier_polygons_open (cairo_t *cr, Curve_infos *ci)
+{
+    int i, j;
+    Control bez_points[4];
+    for (j = 0; j < ci->curve_list.curve_count ; j++){
+        for (i = 0; i < (ci->curve_list.curves[j].control_count - 3) ; i++)
+        {
+            compute_bezier_points (&ci->curve_list.curves[j], i, bez_points);
+            cairo_set_source_rgb (cr, 0, 1.0, 0);
+            cairo_move_to (cr, bez_points[0].x, bez_points[0].y);
+            cairo_line_to (cr, bez_points[1].x, bez_points[1].y);
             cairo_stroke (cr);
-			cairo_move_to (cr, curve->controls[2].x, curve->controls[2].y);
-            cairo_line_to (cr, curve->controls[3].x, curve->controls[3].y);
+            cairo_move_to (cr, bez_points[2].x, bez_points[2].y);
+            cairo_line_to (cr, bez_points[3].x, bez_points[3].y);
             cairo_stroke (cr);
-		}
-	}	
+        }
+	}
+}
+
+void draw_bezier_curve(cairo_t *cr, Control bez_points[4], double theta){
+    double bx[4], by[4];
+    int i;
+    double t;
+    for (i = 0; i < 4; i++){
+        bx[i] = bez_points[i].x;
+        by[i] = bez_points[i].y;
+	}
+	cairo_move_to (cr, compute_bezier_cubic (bx, 0.0), compute_bezier_cubic (by, 0.0));
+	for (t = theta; t < 1.0; t += theta){
+		cairo_line_to (cr, compute_bezier_cubic (bx, t), compute_bezier_cubic (by, t));    
+	}
+	cairo_stroke (cr);
+}
+
+void draw_bezier_curves_open (cairo_t *cr, Curve_infos *ci, double theta){
+    int i, j;
+    Control bez_points[4];
+    for (j = 0; j < ci->curve_list.curve_count ; j++)
+        for (i = 0; i < (ci->curve_list.curves[j].control_count - 3) ; i++)
+        {
+            compute_bezier_points (&ci->curve_list.curves[j], i, bez_points);
+            cairo_set_source_rgb (cr, 0.5, 0.0, 0.5);
+            draw_bezier_curve (cr, bez_points, theta);
+        }
 }
 
 void area_init (gpointer user_data){

@@ -13,4 +13,8 @@ void draw_bezier_polygons_open(cairo_t *cr,Curve_infos *ci);
 
 void area_init (gpointer user_data);
 
+void draw_bezier_curve(cairo_t *cr, Control bez_points[4], double theta);
+
+void draw_bezier_curves_open (cairo_t *cr, Curve_infos *ci, double theta);
+
 #endif // Fin DRAWINGS_H 

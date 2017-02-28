@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include "curve.h"
 
 void init_curve_infos(Curve_infos *ci){
@@ -130,4 +131,8 @@ void compute_bezier_points(Curve * curve, int i,Control bez_points[4]){
 		bez_points[j].x = bx[j];
 		bez_points[j].y = by[j];
 	}
+}
+
+double compute_bezier_cubic(double b[4], double t){
+	return (pow((1 - t), 3)*b[0] + 3*pow((1 - t), 2)*t*b[1] + 3*(1 - t)*pow(t, 2)*b[2] + pow(t, 3)*b[3]);
 }

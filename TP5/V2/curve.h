@@ -45,4 +45,6 @@ void convert_bsp3_to_bezier(double p[4],double b[4]);
 
 void compute_bezier_points(Curve * curve, int i,Control bez_points[4]);
 
+double compute_bezier_cubic(double b[4], double t);
+
 #endif /* CURVE_H */
