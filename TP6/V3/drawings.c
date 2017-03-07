@@ -99,30 +99,32 @@ gboolean on_area_button_press (GtkWidget *area, GdkEvent *event, gpointer data){
                 if(n < 0) break;
                 set_edit_mode (my, EDIT_ADD_CONTROL);
                 add_control (&my->curve_infos, my->click_x, my->click_y);
-                refresh_area (my->area);
                 break;
             case EDIT_MOVE_CURVE : 
                 find_control (&my->curve_infos, my->click_x, my->click_y);                
-                refresh_area (my->area); 
                 break;
             case EDIT_REMOVE_CURVE : 
                 n = find_control (&my->curve_infos, my->click_x, my->click_y);
                 if (n == 0) remove_curve (&my->curve_infos);
-                refresh_area (my->area); 
+
                 break;
             case EDIT_ADD_CONTROL : 
                 add_control (&my->curve_infos, my->click_x, my->click_y);
-                refresh_area (my->area); 
                 break;
             case EDIT_MOVE_CONTROL : 
                 find_control (&my->curve_infos, my->click_x, my->click_y);
-                refresh_area (my->area); 
                 break;
             case EDIT_REMOVE_CONTROL : 
                 n = find_control (&my->curve_infos, my->click_x, my->click_y);
                 if (n == 0) remove_control (&my->curve_infos);            
-                refresh_area (my->area); 
                 break;
+            case EDIT_MOVE_CLIP :
+				find_control (&my->curve_infos, my->click_x, my->click_y);
+				break;
+			case EDIT_RESET_CLIP :
+				find_control (&my->curve_infos, my->click_x, my->click_y);
+				reset_shift(&my->curve_infos);
+				break;
         }
     }
     refresh_area(my->area);
@@ -148,27 +150,27 @@ gboolean on_area_motion_notify (GtkWidget *area, GdkEvent *event, gpointer data)
     if (my->click_n == 1 && my->show_edit == TRUE) {
         switch (my->edit_mode) {
             case EDIT_ADD_CURVE : 
-                refresh_area (my->area);
                 break;
             case EDIT_MOVE_CURVE : 
-                move_curve (&my->curve_infos, my->click_x - my->last_x, 
-                              my->click_y - my->last_y);
-                refresh_area (my->area); 
+                move_curve (&my->curve_infos, my->click_x - my->last_x, my->click_y - my->last_y);
                 break;
-            case EDIT_REMOVE_CURVE : refresh_area (my->area); break;
+            case EDIT_REMOVE_CURVE :
+				break;
             case EDIT_ADD_CONTROL : 
-                refresh_area (my->area); 
                 break;
             case EDIT_MOVE_CONTROL : 
-                move_control (&my->curve_infos, my->click_x - my->last_x, 
-                              my->click_y - my->last_y);
-                refresh_area (my->area); 
+                move_control (&my->curve_infos, my->click_x - my->last_x, my->click_y - my->last_y);
                 break;
-            case EDIT_REMOVE_CONTROL : refresh_area (my->area); break;
+            case EDIT_REMOVE_CONTROL : 
+				break;
+			case EDIT_MOVE_CLIP :
+				move_curve (&my->curve_infos, my->click_x - my->last_x,my->click_y - my->last_y);
+				move_shift(&my->curve_infos, my->click_x - my->last_x,my->click_y - my->last_y);
+				break;
         }
     }
     refresh_area(my->area);
-    return TRUE;  //  ́ev ́enement trait ́e
+    return TRUE;  //  ́evenement traite
 }
 
 gboolean on_area_enter_notify (GtkWidget *area, GdkEvent *event, gpointer data){
@@ -191,7 +193,7 @@ gboolean on_area_draw (GtkWidget *area, cairo_t *cr, gpointer data){
         int pix_width = gdk_pixbuf_get_width(my->pixbuf2);
         int pix_height = gdk_pixbuf_get_height(my->pixbuf2);
         gdk_cairo_set_source_pixbuf(cr,my->pixbuf2,0,0);
-        if (my->clip_image == FALSE) {
+        if ((my->clip_image == FALSE) && (my->bsp_mode != BSP_CLIP)) {
             cairo_rectangle (cr, 0.0, 0.0, pix_width, pix_height);
             cairo_fill (cr);
         }
@@ -206,6 +208,10 @@ gboolean on_area_draw (GtkWidget *area, cairo_t *cr, gpointer data){
 		draw_bezier_curves_close(cr,&my->curve_infos,0.1);
 	}else if(my->bsp_mode == BSP_PROLONG){
 		draw_bezier_curves_prolong(cr,&my->curve_infos,0.1);
+	}else if(my->bsp_mode == BSP_FILL){
+		draw_bezier_curves_fill(cr,&my->curve_infos,0.1);
+	}else if(my->bsp_mode == BSP_CLIP){
+		draw_bezier_curves_clip(cr,&my->curve_infos,0.1,my);
 	}
     draw_control_labels(cr,layout,&my->curve_infos);
 	g_object_unref (layout);
@@ -229,11 +235,11 @@ void draw_bezier_polygons_open (cairo_t *cr, Curve_infos *ci)
 {
     int i, j;
     Control bez_points[4];
+    cairo_set_source_rgb (cr, 0, 1.0, 0);
     for (j = 0; j < ci->curve_list.curve_count ; j++){
         for (i = 0; i < (ci->curve_list.curves[j].control_count - 3) ; i++)
         {
             compute_bezier_points_open (&ci->curve_list.curves[j], i, bez_points);
-            cairo_set_source_rgb (cr, 0, 1.0, 0);
             cairo_move_to (cr, bez_points[0].x, bez_points[0].y);
             cairo_line_to (cr, bez_points[1].x, bez_points[1].y);
             cairo_stroke (cr);
@@ -262,12 +268,12 @@ void draw_bezier_curve(cairo_t *cr, Control bez_points[4], double theta){
 void draw_bezier_curves_open (cairo_t *cr, Curve_infos *ci, double theta){
     int i, j;
     Control bez_points[4];
-    for (j = 0; j < ci->curve_list.curve_count ; j++){
+    cairo_set_source_rgb (cr, 0.5, 0.0, 0.5);
+    for (j = 0; j < ci->curve_list.cu[TP6] Perrot Gaëtan Duarte Florianrve_count ; j++){
 		Curve *curve = &ci->curve_list.curves[j];
         for (i = 0; i < (curve->control_count - 3) ; i++)
         {
             compute_bezier_points_open (curve, i, bez_points);
-            cairo_set_source_rgb (cr, 0.5, 0.0, 0.5);
             draw_bezier_curve (cr, bez_points, theta);
         }
     }
@@ -276,12 +282,12 @@ void draw_bezier_curves_open (cairo_t *cr, Curve_infos *ci, double theta){
 void draw_bezier_curves_close (cairo_t *cr, Curve_infos *ci, double theta){
     int i, j;
     Control bez_points[4];
+    cairo_set_source_rgb (cr, 1.0, 0.0, 0.0);
     for (j = 0; j < ci->curve_list.curve_count ; j++){
 		Curve *curve = &ci->curve_list.curves[j];
         for (i = 0; i < (curve->control_count) ; i++)
         {
             compute_bezier_points_close (curve, i, bez_points);
-            cairo_set_source_rgb (cr, 1.0, 0.0, 0.0);
             draw_bezier_curve (cr, bez_points, theta);
         }
     }
@@ -304,6 +310,64 @@ void draw_bezier_curves_prolong (cairo_t *cr, Curve_infos *ci, double theta){
 		    compute_bezier_points_prolong_last (curve, bez_points);
 		    draw_bezier_curve (cr, bez_points, theta);
 		}	
+}
+
+void generate_bezier_path(cairo_t *cr,Control bez_points[4],double theta,int is_first){
+	double bx[4], by[4];
+    int i;
+    double t;
+    for (i = 0; i < 4; i++){
+        bx[i] = bez_points[i].x;
+        by[i] = bez_points[i].y;
+	}
+	if(is_first){
+		cairo_move_to (cr, compute_bezier_cubic (bx, 0.0), compute_bezier_cubic (by, 0.0));
+	}
+	for (t = theta; t < 1.0; t += theta){
+		cairo_line_to (cr, compute_bezier_cubic (bx, t), compute_bezier_cubic (by, t));    
+	}
+}
+
+void draw_bezier_curves_fill(cairo_t *cr, Curve_infos *ci, double theta){
+	int i, j;
+    Control bez_points[4];
+    cairo_set_source_rgb (cr, 0.02, 0.9, 1.0);
+    for (j = 0; j < ci->curve_list.curve_count ; j++){
+		Curve *curve = &ci->curve_list.curves[j];
+        for (i = 0; i < (curve->control_count) ; i++)
+        {
+            compute_bezier_points_close (curve, i, bez_points);
+            if(i==0){
+				generate_bezier_path (cr, bez_points, theta, TRUE);
+			}else{
+				generate_bezier_path (cr, bez_points, theta, FALSE);
+			}
+        }
+        cairo_fill (cr);
+    }
+}
+
+void draw_bezier_curves_clip(cairo_t *cr, Curve_infos *ci, double theta, Mydata *my){
+	int i, j;
+    Control bez_points[4];
+    for (j = 0; j < ci->curve_list.curve_count ; j++){
+		Curve *curve = &ci->curve_list.curves[j];
+        for (i = 0; i < (curve->control_count) ; i++)
+        {
+			if(my->pixbuf2 != NULL){
+				gdk_cairo_set_source_pixbuf(cr,my->pixbuf2,ci->curve_list.curves[j].shift_x,ci->curve_list.curves[j].shift_y);
+			}else{
+				cairo_set_source_rgb (cr, 0.83, 0.74, 0.48);
+			}
+            compute_bezier_points_close (curve, i, bez_points);
+            if(i==0){
+				generate_bezier_path (cr, bez_points, theta, TRUE);
+			}else{
+				generate_bezier_path (cr, bez_points, theta, FALSE);
+			}
+        }
+        cairo_fill (cr);
+    }
 }
 
 void area_init (gpointer user_data){

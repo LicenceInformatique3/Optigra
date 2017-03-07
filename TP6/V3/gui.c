@@ -45,11 +45,11 @@ void editing_init (Mydata *data) {
     GtkWidget *vbox2 = gtk_box_new (GTK_ORIENTATION_VERTICAL, 1);
 	GtkWidget *separator = gtk_separator_new (GTK_ORIENTATION_HORIZONTAL); 
     my->frame = gtk_frame_new ("Editing");
-    char *edit_radios_noms[6] = {"Add curve", "Move curve", "Remove curve", "Add control", 
-                    "Move control", "Remove control"};  
-    char *bsp_radios_noms[3] = {"Opened", "Closed", "Prolongated"};
+    char *edit_radios_noms[8] = {"Add curve", "Move curve", "Remove curve", "Add control", 
+                    "Move control", "Remove control","Move clip","Reset clip"};  
+    char *bsp_radios_noms[5] = {"Opened", "Closed", "Prolongated","Fill","Clip"};
     
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 8; i++) {
         my->edit_radios[i] =  gtk_radio_button_new_with_label_from_widget (
                     (i == 0) ? NULL : GTK_RADIO_BUTTON(my->edit_radios[0]), edit_radios_noms[i]);
         g_object_set_data (G_OBJECT(my->edit_radios[i]), "numero", GINT_TO_POINTER(i));
@@ -60,7 +60,7 @@ void editing_init (Mydata *data) {
     
 	gtk_container_add (GTK_CONTAINER (vbox2), separator);
 	
-	for (int j = 0; j < 3; j++) {
+	for (int j = 0; j < 5; j++) {
 		my->bsp_radios[j] =  gtk_radio_button_new_with_label_from_widget (
 				(j == 0) ? NULL : GTK_RADIO_BUTTON(my->bsp_radios[0]), bsp_radios_noms[j]);
 		g_object_set_data (G_OBJECT(my->bsp_radios[j]), "mode",  GINT_TO_POINTER(j + 1));

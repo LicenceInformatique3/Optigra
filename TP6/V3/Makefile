@@ -15,7 +15,7 @@ LIBS    = $$(pkg-config gtk+-3.0 --libs) -lm
 CFILES  = main-app.c font.c curve.c mydata.c drawings.c menus.c gui.c util.c
 
 # Mettre ici le nom de l'executable.
-EXEC    = tp05
+EXEC    = tp06
 
 # Calcul automatique de la liste des fichiers ".o" a partir de CFILES.
 OBJECTS := $(CFILES:%.c=%.o)
@@ -37,3 +37,4 @@ depend : *.c *.h
 # Inclut le fichier des dependances. 
 # Le "-" devant include supprime l'erreur si le fichier est absent.
 -include depend
+

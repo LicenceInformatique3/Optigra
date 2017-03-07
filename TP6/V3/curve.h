@@ -12,6 +12,8 @@ typedef struct{
 typedef struct{
 	int control_count;
 	Control controls[CONTROL_MAX];
+	double shift_x;
+	double shift_y;
 } Curve;
 
 typedef struct{
@@ -56,5 +58,9 @@ void convert_bsp3_to_bezier_prolong_last (double p[3],double b[4]);
 void compute_bezier_points_prolong_first (Curve *curve, Control bez_points[4]);
 
 void compute_bezier_points_prolong_last (Curve *curve, Control bez_points[4]);
+
+int move_shift(Curve_infos *ci, double dx, double dy);
+
+int reset_shift(Curve_infos *ci);
 
 #endif /* CURVE_H */

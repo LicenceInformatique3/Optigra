@@ -20,6 +20,8 @@ int add_curve (Curve_infos *ci) {
     ci->curve_list.curves[n].control_count = 0;
     ci->current_curve = n;
     ci->current_control = -1;
+    ci->curve_list.curves[n].shift_x = 0.0;
+	ci->curve_list.curves[n].shift_y = 0.0;
     return n;
 }
 
@@ -190,4 +192,22 @@ void compute_bezier_points_prolong_last (Curve *curve, Control bez_points[4]){
         bez_points[j].x = bx[j];
         bez_points[j].y = by[j];
     }
+}
+
+int move_shift(Curve_infos *ci, double dx, double dy){
+	int n = ci->current_curve;    
+    if(n < 0 || n > ci->curve_list.curve_count - 1)
+		return -1;
+	ci->curve_list.curves[n].shift_x += dx;
+	ci->curve_list.curves[n].shift_y += dy;
+	return 0;
+}
+
+int reset_shift(Curve_infos *ci){
+	int n = ci->current_curve;    
+    if(n < 0 || n > ci->curve_list.curve_count - 1)
+		return -1;
+	ci->curve_list.curves[n].shift_x = 0.0;
+	ci->curve_list.curves[n].shift_y = 0.0;
+	return 0;
 }
