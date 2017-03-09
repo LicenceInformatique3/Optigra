@@ -269,7 +269,7 @@ void draw_bezier_curves_open (cairo_t *cr, Curve_infos *ci, double theta){
     int i, j;
     Control bez_points[4];
     cairo_set_source_rgb (cr, 0.5, 0.0, 0.5);
-    for (j = 0; j < ci->curve_list.cu[TP6] Perrot Gaëtan Duarte Florianrve_count ; j++){
+    for (j = 0; j < ci->curve_list.curve_count ; j++){
 		Curve *curve = &ci->curve_list.curves[j];
         for (i = 0; i < (curve->control_count - 3) ; i++)
         {
